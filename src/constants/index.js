@@ -1,18 +1,20 @@
+const BASE_URL = import.meta.env.BASE_URL;
+
 export const mySocials = [
-{
-  name: "WhatsApp",
-  href: "https://wa.me/918343893284?text=Hi%2C%20I%27m%20interested%20in%20your%20video%20editing%20services.",
-  icon: "/assets/socials/whatsApp.svg",
-},
+  {
+    name: "WhatsApp",
+    href: "https://wa.me/918343893284?text=Hi%2C%20I%27m%20interested%20in%20your%20video%20editing%20services.",
+    icon: `${BASE_URL}assets/socials/whatsApp.svg`,
+  },
   {
     name: "Linkedin",
     href: "https://www.linkedin.com/in/niladri-mondal-3a5083393",
-    icon: "/assets/socials/linkedIn.svg",
+    icon: `${BASE_URL}assets/socials/linkedIn.svg`,
   },
   {
     name: "Instagram",
     href: "https://www.instagram.com/niladrii16",
-    icon: "/assets/socials/instagram.svg",
+    icon: `${BASE_URL}assets/socials/instagram.svg`,
   },
 ];
 

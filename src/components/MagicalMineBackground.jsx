@@ -19,9 +19,9 @@ import * as THREE from "three";
 import { useMediaQuery } from "react-responsive";
 
 const MineModel = () => {
-  const { scene, animations } = useGLTF(
-    "/models/magical_abandoned_mine.glb"
-  );
+  const { nodes, materials, animations } = useGLTF(
+  import.meta.env.BASE_URL + "models/magical_abandoned_mine.glb"
+);
 
 
   const isMobile = useMediaQuery({ maxWidth: 768 });
@@ -178,7 +178,7 @@ const MagicalMineBackground = () => {
 };
 
 useGLTF.preload(
-  "/models/magical_abandoned_mine.glb"
+  import.meta.env.BASE_URL + "models/magical_abandoned_mine.glb"
 );
 
 export default MagicalMineBackground;
