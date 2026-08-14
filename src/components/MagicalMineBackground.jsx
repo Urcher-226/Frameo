@@ -19,20 +19,16 @@ import * as THREE from "three";
 import { useMediaQuery } from "react-responsive";
 
 const MineModel = () => {
-  const { nodes, materials, animations } = useGLTF(
-  import.meta.env.BASE_URL + "models/magical_abandoned_mine.glb"
-);
-
+  const { scene, animations } = useGLTF(
+    import.meta.env.BASE_URL + "models/magical_abandoned_mine.glb"
+  );
 
   const isMobile = useMediaQuery({ maxWidth: 768 });
-  
-
 
   // GLB animations
   const { actions } = useAnimations(animations, scene);
 
   useEffect(() => {
-    // Play every animation contained inside the GLB
     Object.values(actions).forEach((action) => {
       if (!action) return;
 
@@ -48,19 +44,17 @@ const MineModel = () => {
     };
   }, [actions]);
 
-  // Crystal glow
+  // Crystal + firefly glow
   useEffect(() => {
     scene.traverse((object) => {
       if (!object.isMesh || !object.material) return;
 
-      const materials = Array.isArray(object.material)
+      const objectMaterials = Array.isArray(object.material)
         ? object.material
         : [object.material];
 
-      materials.forEach((material) => {
-        /*
-         * CRYSTALS
-         */
+      objectMaterials.forEach((material) => {
+        // Crystals
         if (
           object.name.toLowerCase().includes("crystal") ||
           material.name === "Combination"
@@ -69,23 +63,18 @@ const MineModel = () => {
             material.emissive || new THREE.Color();
 
           material.emissive.set("#4da6ff");
-          material.emissiveIntensity = 4;
+          material.emissiveIntensity = 2;
           material.toneMapped = false;
           material.needsUpdate = true;
         }
 
-        /*
-         * FIREFLIES
-         *
-         * Animation is controlled by the GLB animation system above.
-         * Here we only make them emissive.
-         */
-        if (
-          object.name.toLowerCase().includes("firefly")
-        ) {
-          material.emissive = material.emissive || new THREE.Color();
+        // Fireflies
+        if (object.name.toLowerCase().includes("firefly")) {
+          material.emissive =
+            material.emissive || new THREE.Color();
+
           material.emissive.set("#4da6ff");
-          material.emissiveIntensity = 2;
+          material.emissiveIntensity = 4;
           material.toneMapped = false;
           material.needsUpdate = true;
         }
@@ -96,16 +85,20 @@ const MineModel = () => {
   return (
     <primitive
       object={scene}
-      scale={isMobile ? 0.013 : 0.017}
-      position={isMobile ? [3, -4.5, 0] : [3, -4, 0]}
-      rotation={isMobile ? [0.1, -1.5, 0.3] : [-0.01, -1.45, 0.15]}
+      scale={isMobile ? 0.02 : 0.017}
+      position={isMobile ? [5, -4.5, 0] : [3.5, -4, 0]}
+      rotation={
+        isMobile
+          ? [0.1, -1.5, 0.2]
+          : [-0.01, -1.45, 0.14]
+      }
     />
   );
 };
 
 const MagicalMineBackground = () => {
   return (
-    <div className="absolute inset-x-0 top-0 h-[calc(96%+200px)] w-full overflow-visible -z-10">
+    <div className="absolute inset-x-0 top-0 h-[calc(97.5%+200px)] w-full overflow-visible -z-10">
       <Canvas
         camera={{
           position: [0, 2, 8],

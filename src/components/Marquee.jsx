@@ -1,5 +1,5 @@
 import { twMerge } from "tailwind-merge";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export default function Marquee({
   className,
@@ -14,39 +14,116 @@ export default function Marquee({
   const marqueeRef = useRef(null);
   const touchStart = useRef(0);
 
-  // Mouse drag
-  const isDragging = useRef(false);
-  const mouseStart = useRef(0);
+const moveMarquee = (amount) => {
+  if (playing || !marqueeRef.current) return;
 
-  const moveMarquee = (amount) => {
-    if (playing || !marqueeRef.current) return;
+  const tracks = marqueeRef.current.querySelectorAll(
+    "[data-marquee-track]"
+  );
 
-    const tracks = marqueeRef.current.querySelectorAll("[data-marquee-track]");
+  tracks.forEach((track) => {
+    const animations = track.getAnimations();
 
-    tracks.forEach((track) => {
-      const animations = track.getAnimations();
+    animations.forEach((animation) => {
+      if (animation.playState !== "paused") return;
 
-      animations.forEach((animation) => {
-        if (animation.playState === "paused") {
-          const currentTime = Number(animation.currentTime) || 0;
+      const currentTime = Number(animation.currentTime) || 0;
 
-          animation.currentTime = currentTime + amount;
-        }
-      });
+      const duration = animation.effect?.getTiming()?.duration;
+
+      // Keep the animation timeline inside one cycle.
+      if (typeof duration === "number" && duration > 0) {
+        const nextTime =
+          ((currentTime + amount) % duration + duration) % duration;
+
+        animation.currentTime = nextTime;
+      } else {
+        animation.currentTime = currentTime + amount;
+      }
     });
-  };
+  });
+};
 
   // =========================
   // Mouse wheel
   // =========================
 
-  const handleWheel = (e) => {
-    if (playing || vertical) return;
 
-    const amount = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+
+useEffect(() => {
+  const marquee = marqueeRef.current;
+
+  if (!marquee) return;
+
+  const handleNativeWheel = (e) => {
+    // Only when paused, horizontal, desktop
+    if (playing || vertical || window.innerWidth < 768) return;
+
+    const rect = marquee.getBoundingClientRect();
+
+    const mouseX = e.clientX - rect.left;
+    const sideZone = rect.width * 0.15;
+
+    // LEFT / RIGHT 15% → normal page vertical scroll
+    if (
+      mouseX <= sideZone ||
+      mouseX >= rect.width - sideZone
+    ) {
+      return;
+    }
+
+    // MIDDLE 70% → completely stop page scroll
+    e.preventDefault();
+    e.stopPropagation();
+
+    const amount =
+      e.deltaX !== 0 ? e.deltaX : e.deltaY;
 
     moveMarquee(amount * 20);
   };
+
+  marquee.addEventListener("wheel", handleNativeWheel, {
+    passive: false,
+  });
+
+  return () => {
+    marquee.removeEventListener("wheel", handleNativeWheel);
+  };
+}, [playing, vertical]);
+
+// useEffect(() => {
+//   const marquee = marqueeRef.current;
+
+//   if (!marquee) return;
+
+//   const handleWheel = (e) => {
+//     // Only paused horizontal marquees
+//     if (playing || vertical) return;
+
+//     // Desktop only
+//     if (window.innerWidth < 768) return;
+
+//     // STOP PAGE VERTICAL SCROLL
+//     e.preventDefault();
+//     e.stopPropagation();
+
+//     // Convert mouse wheel movement into horizontal marquee movement
+//     const amount = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+
+//     moveMarquee(amount * 20);
+//   };
+
+//   // IMPORTANT:
+//   // passive:false is required so preventDefault() can
+//   // actually stop the browser's page scrolling.
+//   marquee.addEventListener("wheel", handleWheel, {
+//     passive: false,
+//   });
+
+//   return () => {
+//     marquee.removeEventListener("wheel", handleWheel);
+//   };
+// }, [playing, vertical]);
 
   // =========================
   // Touch / Mobile Swipe
@@ -75,50 +152,6 @@ export default function Marquee({
     }
   };
 
-  // =========================
-  // Mouse Drag / Desktop
-  // =========================
-
-  const handleMouseDown = (e) => {
-    if (playing || vertical) return;
-
-    if (e.target.closest("button, a")) return;
-
-    isDragging.current = true;
-    mouseStart.current = e.clientX;
-
-    marqueeRef.current?.classList.add("cursor-grabbing");
-  };
-
-  const handleMouseMove = (e) => {
-    if (
-      playing ||
-      vertical ||
-      !isDragging.current
-    )
-      return;
-
-    const difference = mouseStart.current - e.clientX;
-
-    if (Math.abs(difference) > 0) {
-      moveMarquee(difference * 12);
-      mouseStart.current = e.clientX;
-    }
-  };
-
-  const handleMouseUp = () => {
-    isDragging.current = false;
-
-    marqueeRef.current?.classList.remove("cursor-grabbing");
-  };
-
-  const handleMouseLeave = () => {
-    isDragging.current = false;
-
-    marqueeRef.current?.classList.remove("cursor-grabbing");
-  };
-
-
 
 
 
@@ -126,13 +159,8 @@ export default function Marquee({
     <div
       ref={marqueeRef}
       {...props}
-      onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
       className={twMerge(
         `group flex overflow-hidden p-2 [--duration:40s] [--gap:1rem] [gap:var(--gap)] ${
           vertical ? "flex-col" : "flex-row"

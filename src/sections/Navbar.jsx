@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 
-const Navigation = ({ closeMenu }) => {
+const Navigation = ({ closeMenu, handleNavClick }) => {
   const links = [
     { name: "Home", href: "#home" },
     { name: "About", href: "#about" },
@@ -57,8 +57,10 @@ const Navigation = ({ closeMenu }) => {
         >
           <a
             href={link.href}
-            onClick={closeMenu}
-            className="block rounded-xl px-5 py-3 text-2xl font-medium text-neutral-300 transition-colors hover:bg-white/5 hover:text-white"
+            onClick={(e) =>
+              handleNavClick(e, link.href.substring(1))
+            }
+            className="inline-block rounded-xl px-5 py-3 text-2xl font-medium text-neutral-300 transition-colors hover:bg-white/5 hover:text-white"
           >
             {link.name}
           </a>
@@ -133,6 +135,57 @@ const Navbar = () => {
     setIsOpen(false);
   };
 
+  // Smooth section navigation
+  const handleNavClick = (e, id) => {
+  e.preventDefault();
+
+  const element = document.getElementById(id);
+
+  if (!element) return;
+
+  closeMenu();
+
+  const isMobile = window.innerWidth < 640;
+  const offset = isMobile ? 70 : 0;
+
+  const startPosition = window.scrollY;
+
+  const targetPosition =
+    element.getBoundingClientRect().top +
+    window.scrollY -
+    offset;
+
+  const distance = targetPosition - startPosition;
+
+  // Desktop: fast start → very slow finish
+  const duration = isMobile ? 1000 : 800;
+
+  let startTime = null;
+
+  const easeOut = (t) => {
+    return 1 - Math.pow(1 - t, 4);
+  };
+
+  const animateScroll = (currentTime) => {
+    if (!startTime) startTime = currentTime;
+
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    window.scrollTo(
+      0,
+      startPosition + distance * easeOut(progress)
+    );
+
+    if (progress < 1) {
+      requestAnimationFrame(animateScroll);
+    }
+  };
+
+  requestAnimationFrame(animateScroll);
+};
+
+
   return (
     <div className="fixed inset-x-0 top-0 z-50 w-full backdrop-blur-lg bg-primary/40">
       <div className="mx-auto max-w-7xl c-space">
@@ -152,25 +205,41 @@ const Navbar = () => {
             <ul className="nav-ul">
 
               <li className="nav-li">
-                <a className="nav-link" href="#home">
+                <a
+                  className="nav-link"
+                  href="#home"
+                  onClick={(e) => handleNavClick(e, "home")}
+                >
                   Home
                 </a>
               </li>
 
               <li className="nav-li">
-                <a className="nav-link" href="#about">
+                <a
+                  className="nav-link"
+                  href="#about"
+                  onClick={(e) => handleNavClick(e, "about")}
+                >
                   About
                 </a>
               </li>
 
               <li className="nav-li">
-                <a className="nav-link" href="#project">
+                <a
+                  className="nav-link"
+                  href="#project"
+                  onClick={(e) => handleNavClick(e, "project")}
+                >
                   Projects
                 </a>
               </li>
 
               <li className="nav-li">
-                <a className="nav-link" href="#contact">
+                <a
+                  className="nav-link"
+                  href="#contact"
+                  onClick={(e) => handleNavClick(e, "contact")}
+                >
                   Contact
                 </a>
               </li>
@@ -187,15 +256,33 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu */}
+          {isOpen && (
+            <div
+              className="fixed inset-0 z-40 sm:hidden"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                closeMenu();
+              }}
+            />
+          )}
+
           <motion.div
             initial={false}
             animate={isOpen ? "open" : "closed"}
-            className="absolute right-0 top-0 sm:hidden"
+            className={`absolute right-0 top-0 sm:hidden ${
+              isOpen
+                ? "pointer-events-auto"
+                : "pointer-events-none"
+            }`}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+            }}
           >
 
             {/* Circular Background */}
             <motion.div
-              className="absolute left-25 top-0 h-[15rem] w-[28rem] rounded-full bg-[#282b4b] shadow-2xl"
+              className="absolute left-25 top-0 h-[15rem] w-[28rem] rounded-full bg-[#171b4b] shadow-2xl"
               variants={{
                 open: {
                   scale: 2,
@@ -217,6 +304,9 @@ const Navbar = () => {
               }}
               style={{
                 transformOrigin: "top right",
+              }}
+              onPointerDown={(e) => {
+                e.stopPropagation();
               }}
             />
 
@@ -242,8 +332,14 @@ const Navbar = () => {
                 },
               }}
               className="relative z-40 w-[18rem]"
+              onPointerDown={(e) => {
+                e.stopPropagation();
+              }}
             >
-              <Navigation closeMenu={closeMenu} />
+              <Navigation
+                closeMenu={closeMenu}
+                handleNavClick={handleNavClick}
+              />
             </motion.nav>
 
           </motion.div>

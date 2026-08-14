@@ -16,10 +16,24 @@ const ProjectDetails = ({
         animate={{ opacity: 1, scale: 1 }}
       >
         <button
-          onClick={closeModal}
-          className="absolute p-2 rounded-sm top-5 right-5 bg-midnight hover:bg-gray-500"
+          type="button"
+          aria-label="Close"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal();
+          }}
+          className="absolute z-[10000] top-3 right-3 sm:top-5 sm:right-5
+             flex items-center justify-center
+             w-10 h-10 rounded-full
+             bg-black/70 border border-white/20
+             cursor-pointer pointer-events-auto touch-manipulation"
         >
-          <img src={`${import.meta.env.BASE_URL}assets/close.svg`} className="w-6 h-6" />
+          <img
+            src={`${import.meta.env.BASE_URL}assets/close.svg`}
+            alt="Close"
+            className="w-5 h-5 sm:w-6 sm:h-6 pointer-events-none"
+          />
         </button>
         <img src={image} alt={title} className="w-full rounded-t-2xl" />
         <div className="p-5">
