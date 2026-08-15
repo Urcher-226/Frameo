@@ -300,7 +300,7 @@ const Projects = () => {
           My Projects
         </h2>
 
-        <div className="bg-gradient-to-r from-transparent via-neutral-700 to-transparent mt-12 h-[1px] w-full" />
+        <div className="min-h-screen bg-black" />
 
         {/* Play / Pause */}
         <div className="relative z-[100] flex justify-end sm:justify-end -mt-12 mb-4 px-2 pointer-events-none">
