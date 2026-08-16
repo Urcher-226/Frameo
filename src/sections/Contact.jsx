@@ -3,7 +3,7 @@ import emailjs from "@emailjs/browser";
 import Alert from "../components/Alert";
 import MagicalMineBackground from "../components/MagicalMineBackground";
 
-const Contact = () => {
+const Contact = ({ onLoaded }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -67,7 +67,7 @@ const Contact = () => {
       className="relative flex items-center c-space overflow-visible mt-5 md:mt-25 py-5 md:py-20"
     >
       {/* Magical Mine - Contact background only */}
-    <MagicalMineBackground />
+<MagicalMineBackground onLoaded={onLoaded} />
 
 
       {showAlert && <Alert type={alertType} text={alertMessage} />}

@@ -18,12 +18,18 @@ import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { useMediaQuery } from "react-responsive";
 
-const MineModel = () => {
-  const { scene, animations } = useGLTF(
-    import.meta.env.BASE_URL + "models/magical_abandoned_mine.glb"
-  );
+const MineModel = ({ onLoaded }) => {
 
-  const isMobile = useMediaQuery({ maxWidth: 768 });
+  const { scene, animations } = useGLTF(
+  import.meta.env.BASE_URL + "models/magical_abandoned_mine.glb"
+);
+
+useEffect(() => {
+  console.log("MAGICAL MINE READY");
+  onLoaded?.("Magical Mine");
+}, [onLoaded]);
+
+const isMobile = useMediaQuery({ maxWidth: 768 });
 
   // GLB animations
   const { actions } = useAnimations(animations, scene);
@@ -96,7 +102,7 @@ const MineModel = () => {
   );
 };
 
-const MagicalMineBackground = () => {
+const MagicalMineBackground = ({ onLoaded }) => {
   return (
     <div className="absolute inset-x-0 top-0 h-[calc(97.5%+200px)] w-full overflow-visible -z-10">
       <Canvas
@@ -134,7 +140,7 @@ const MagicalMineBackground = () => {
         />
 
         <Suspense fallback={null}>
-          <MineModel />
+          <MineModel onLoaded={onLoaded} />
         </Suspense>
 
         {/* Crystal Glow / Bloom */}
